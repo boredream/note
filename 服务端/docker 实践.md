@@ -150,8 +150,6 @@ $ docker exec nginx1 nginx -s reload
 
 
 
-
-
 # Compose综合使用
 
 正常情况下 nginx直接按需代理8080
