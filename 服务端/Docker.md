@@ -430,7 +430,18 @@ https://docs.docker.com/compose/
 
 ### 安装
 
-Todo centOS
+https://docs.docker.com/compose/install/
+
+```sh
+# 国内用户可以使用以下方式加快下载
+curl -L https://download.fastgit.org/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+
+# 添加执行权限
+chmod +x /usr/local/bin/docker-compose
+
+# 校验
+docker-compose --version
+```
 
 
 
@@ -494,12 +505,14 @@ docker-compose stop
 # 配置文件
 /etc/nginx/nginx.conf
 
+# 证书自定义目录
+/etc/nginx/cert
+
 # 日志
 /var/log/nginx
 
 # 项目
 /usr/share/nginx/html
-
 ```
 
 
@@ -508,48 +521,28 @@ docker-compose stop
 
 ```sh
 # nginx.conf
-user  nginx;
-worker_processes  auto;
+    server {
+        listen                  443 ssl;
+        server_name             api.papikoala.cn;
+        ssl_certificate         cert/server.pem;      # /etc/nginx/
+        ssl_certificate_key     cert/server.key;
+        ssl_session_timeout     5m;
+        ssl_ciphers             ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+        ssl_protocols TLSv1     TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
+        location / {
+            proxy_pass  http://web:8080;
+        }
+    }
 
-error_log  /var/log/nginx/error.log notice;
-pid        /var/run/nginx.pid;
-
-
-events {
-    worker_connections  1024;
-}
-
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log  /var/log/nginx/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    include /etc/nginx/conf.d/*.conf;
-    
-    # 监听来自80端口，host为 api.papikoala.cn 的接口
     server {
         listen          80;
         server_name     api.papikoala.cn;
 
-				# 代理转发 / 到 proxy_pass
         location / {
-            proxy_pass  http://localhost:8080/;
+            proxy_pass  http://web:8080;
         }
     }
-}
 ```
 
 
@@ -571,17 +564,12 @@ $ docker cp nginx1:/usr/share/nginx/html/ ./nginx/html/
 # 4. 启动容器并设置挂载文件
 $ docker run -d --name ng1 \
 -p 80:80 \
--v ./nginx/nginx.conf:/etc/nginx/nginx.conf \
--v ./nginx/log/:/var/log/nginx/ \
--v ./nginx/html/:/usr/share/nginx/html/ \
+-v # 参考compose配置 
 nginx
 
 # 5. 修改配置文件后，nginx重载（修改html无需）
 $ docker exec nginx1 nginx -s reload
-
 ```
-
-
 
 
 
@@ -644,14 +632,17 @@ $ docker exec nginx1 nginx -s reload
 
 这就牵涉到容器间网路通信了，使用docker-compose解决
 
+host直接使用compose里的容器名称，如web、nginx，docker自带一个CDN，同compose下可以直接解析
+
 ```yaml
 # docker-compose-yml
 version: "3.9"
 services:
-  web:
+  web:  # 容器名称
     build: .  # 使用Dockerfile新生成镜像
+    image: boredream/springbootdemo_web
     ports: # 宿主机端口:容器端口
-      - "443:443"
+      - "8080:8080"
     depends_on: # 依赖先执行的容器
       - nginx
       - mysql
@@ -661,10 +652,12 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes: # 宿主机目录:容器目录
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # 配置
       - ./nginx/log:/var/log/nginx  # 日志
       - ./nginx/html:/usr/share/nginx/html  # 网页
+      - ./nginx/cert:/etc/nginx/cert  # ssl
 
   mysql:
     image: mysql:8.0.26
@@ -677,6 +670,7 @@ services:
       - ./mysql/conf:/etc/mysql # 配置
       - ./mysql/log:/var/log/mysql # 日志
       - ./mysql/init:/docker-entrypoint-initdb.d # mysql第一次启动时执行,之后重启容器不会重复执行
+
 ```
 
 
@@ -691,19 +685,49 @@ $ docker-compose up
 
 ### 服务器使用compose
 
-本地先push到自己dockerhub仓库，image名字必须是「hub用户名/xxx」
+本地先push自己dockfile生成的image到自己dockerhub仓库，名字必须是「hub用户名/xxx」
 
 远程docker安装，docker-compose安装
 
 远程docker login
 
-远程docker 编写compose以及相关文件
+上传远程compose文件等内容
+
+cd到compose目录，然后up启动
 
 
 
 
 
+TODO
 
+数据库初始化
+
+
+
+
+
+# 问题
+
+本地调试部署麻烦，每次都要重新compose-up重新生成image？
+
+方案1. 应用和环境分开部署，环境打包使用compose
+
+
+
+
+
+compose前需要准备一堆文件，如何更简单？
+
+
+
+
+
+docker容器内如何访问宿主机，如nginx代理转发。
+
+方案1. 先查询宿主机ip，然后host填宿主机的内网ip
+
+方案2. host填固定值： host.docker.internal  /  172.17.0.1
 
 
 
