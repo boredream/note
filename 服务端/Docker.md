@@ -330,7 +330,7 @@ ENV						# 构建时，设置环境变量
 
 
 
-### 实践
+### 使用
 
 #### 创建自己的centos
 
@@ -397,82 +397,20 @@ EXPOSE 是镜像暴露端口，不等于实际应用使用端口
 
 
 
-
+#### 发布镜像到Hub
 
 ```sh
-# 创建dockerfile文件，名字随便，建议 dockerfile
-FROM centos
+# 登录
+docker login --username=boredream
 
-VOLUME ["v1", "v2"]
+# 输入密码
 
-CMD echo "----- end ----"
-CMD /bin/bash
-
-# 每个命令，就是镜像的一层
+# 
 
 
-
-# 使用dockerfile创建镜像，不要少了最后的「.」
-docker build -f dockerfile -t 镜像名 .
-
-# 之后就可以 images 查看镜像了
 ```
 
 
-
-```sh
-# 启动自己镜像，进入查看
-$ docker run -it boredream/centos:1.0 /bin/bash
-$ ls -l
-
-total 56
-lrwxrwxrwx   1 root root    7 Nov  3  2020 bin -> usr/bin
-drwxr-xr-x   5 root root  360 Oct 15 08:02 dev
-drwxr-xr-x   1 root root 4096 Oct 15 08:02 etc
-drwxr-xr-x   2 root root 4096 Nov  3  2020 home
-lrwxrwxrwx   1 root root    7 Nov  3  2020 lib -> usr/lib
-lrwxrwxrwx   1 root root    9 Nov  3  2020 lib64 -> usr/lib64
-drwx------   2 root root 4096 Sep 15 14:17 lost+found
-drwxr-xr-x   2 root root 4096 Nov  3  2020 media
-drwxr-xr-x   2 root root 4096 Nov  3  2020 mnt
-drwxr-xr-x   2 root root 4096 Nov  3  2020 opt
-dr-xr-xr-x 185 root root    0 Oct 15 08:02 proc
-dr-xr-x---   2 root root 4096 Sep 15 14:17 root
-drwxr-xr-x  11 root root 4096 Sep 15 14:17 run
-lrwxrwxrwx   1 root root    8 Nov  3  2020 sbin -> usr/sbin
-drwxr-xr-x   2 root root 4096 Nov  3  2020 srv
-dr-xr-xr-x  13 root root    0 Oct 15 08:02 sys
-drwxrwxrwt   7 root root 4096 Sep 15 14:17 tmp
-drwxr-xr-x  12 root root 4096 Sep 15 14:17 usr
-drwxr-xr-x   2 root root 4096 Oct 15 08:02 v1
-drwxr-xr-x   2 root root 4096 Oct 15 08:02 v2
-drwxr-xr-x  20 root root 4096 Sep 15 14:17 var
-
-v1 v1 就是自己挂载的文件夹
-
-# 可以退出容器查看
-$ docker inspect 9d50e2261260 
-{
-    "Type": "volume",
-    "Name": "eb776d77191061040d2f55335f2bea32e172644f5746417890c6e6457149eb49",
-    "Source": "/var/lib/docker/volumes/eb776d77191061040d2f55335f2bea32e172644f5746417890c6e6457149eb49/_data",
-    "Destination": "v1",
-    "Driver": "local",
-    "Mode": "",
-    "RW": true,
-    "Propagation": ""
-},
-{
-    "Type": "volume",
-    "Name": "e2bfd3188b126d1059c7089783673b283466890876bfddbd6ba0040c85be32f1",
-    "Source": "/var/lib/docker/volumes/e2bfd3188b126d1059c7089783673b283466890876bfddbd6ba0040c85be32f1/_data",
-    "Destination": "v2",
-    "Driver": "local",
-    "Mode": "",
-    "RW": true,
-    "Propagation": ""
-}
-```
 
 
 
@@ -544,38 +482,224 @@ docker-compose stop
 
 
 
-# 实践场景
-
-镜像中心，可以搜索查看版本、文档
-
-https://registry.hub.docker.com/
+# 实践
 
 
 
+## Nginx
 
-
-## Mysql
+### 目录结构
 
 ```sh
-# 创建mysql
-$ docker run --name bd-mysql -e MYSQL_ROOT_PASSWORD=root -d -p 13306:3306 mysql
+# 配置文件
+/etc/nginx/nginx.conf
 
+# 日志
+/var/log/nginx
+
+# 项目
+/usr/share/nginx/html
 
 ```
 
 
 
-### 多个mysql同步
+### 配置
 
 ```sh
-# 创建mysql，并设置volume
-$ docker run --name mysql1 -e MYSQL_ROOT_PASSWORD=root -d -p 13306:3306 -v /etc/mysql/conf.d -v /var/lib/mysql mysql
+# nginx.conf
+user  nginx;
+worker_processes  auto;
 
-# 创建另一个mysql容器，v-from上一个容器
-$ docker run --name mysql2 -e MYSQL_ROOT_PASSWORD=root -d -p 13307:3306 --volumes-from mysql1 mysql
+error_log  /var/log/nginx/error.log notice;
+pid        /var/run/nginx.pid;
 
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+    
+    # 监听来自80端口，host为 api.papikoala.cn 的接口
+    server {
+        listen          80;
+        server_name     api.papikoala.cn;
+
+				# 代理转发 / 到 proxy_pass
+        location / {
+            proxy_pass  http://localhost:8080/;
+        }
+    }
+}
+```
+
+
+
+### 使用
+
+```sh
+# 1. 启动容器
+$ docker run --rm -d --name nginx1 nginx
+
+# 2. 拷贝容器配置文件等，到本地(先 cd 到目标目录)
+$ docker cp nginx1:/etc/nginx/nginx.conf ./nginx/nginx.conf
+$ docker cp nginx1:/usr/share/nginx/html/ ./nginx/html/
+# log是启动容器后生成的，启动容器时还是空的，不需要开始就cp过来
+# $ docker cp nginx1:/var/log/nginx/ ./nginx/log/ 
+
+# 3. 关闭临时容器 --rm 的会自动删除
+
+# 4. 启动容器并设置挂载文件
+$ docker run -d --name ng1 \
+-p 80:80 \
+-v ./nginx/nginx.conf:/etc/nginx/nginx.conf \
+-v ./nginx/log/:/var/log/nginx/ \
+-v ./nginx/html/:/usr/share/nginx/html/ \
+nginx
+
+# 5. 修改配置文件后，nginx重载（修改html无需）
+$ docker exec nginx1 nginx -s reload
 
 ```
+
+
+
+
+
+
+
+## MySql
+
+### 目录结构
+
+```sh
+# 配置文件
+/etc/mysql
+
+# 日志
+/var/log/mysql
+
+# 数据
+/var/lib/mysql
+
+ # mysql第一次启动时执行,之后重启容器不会重复执行
+/docker-entrypoint-initdb.d
+
+```
+
+
+
+### 使用
+
+```sh
+# 1. 启动容器
+$ docker run --rm -it --name mysql1 mysql bin/bash
+# ctrl + p + q 退出容器，-d的mysql会自动关闭？
+
+# 2. 拷贝容器配置文件等，到本地(先 cd 到目标目录)
+$ docker cp mysql1:/etc/mysql ./mysql/conf
+
+# 3. 手动删除容器
+$ docker rm -f mysql1
+
+# 4. 启动容器并设置挂载文件
+$ docker run -d --name mysql1 \
+-p 3306:3306 \
+-v ./mysql/conf:/etc/mysql \
+-v ./mysql/log:/var/log/mysql \
+-v ./mysql/init:/docker-entrypoint-initdb.d \
+nginx
+
+# 5. 修改配置文件后，nginx重载（修改html无需）
+$ docker exec nginx1 nginx -s reload
+
+```
+
+
+
+## Compose综合使用
+
+正常情况下 nginx直接按需代理8080
+
+但nginx在容器内，SpringBoot服务在另一个容器，无法直接网络互通
+
+这就牵涉到容器间网路通信了，使用docker-compose解决
+
+```yaml
+# docker-compose-yml
+version: "3.9"
+services:
+  web:
+    build: .  # 使用Dockerfile新生成镜像
+    ports: # 宿主机端口:容器端口
+      - "443:443"
+    depends_on: # 依赖先执行的容器
+      - nginx
+      - mysql
+
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes: # 宿主机目录:容器目录
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # 配置
+      - ./nginx/log:/var/log/nginx  # 日志
+      - ./nginx/html:/usr/share/nginx/html  # 网页
+
+  mysql:
+    image: mysql:8.0.26
+    restart: always
+    environment: # 环境变量配置去 https://hub.docker.com/_/mysql 官方查看
+      MYSQL_ROOT_PASSWORD: "root" # root账号密码
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/conf:/etc/mysql # 配置
+      - ./mysql/log:/var/log/mysql # 日志
+      - ./mysql/init:/docker-entrypoint-initdb.d # mysql第一次启动时执行,之后重启容器不会重复执行
+```
+
+
+
+CD到 docker-compose.yml 目录，构建
+
+```sh
+$ docker-compose up
+```
+
+
+
+### 服务器使用compose
+
+本地先push到自己dockerhub仓库，image名字必须是「hub用户名/xxx」
+
+远程docker安装，docker-compose安装
+
+远程docker login
+
+远程docker 编写compose以及相关文件
+
+
 
 
 
