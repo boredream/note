@@ -2,7 +2,7 @@
 
 白色、简约
 
-模板不能烂大街
+模板不能烂大街，撞车培训机构
 
 重点突出内容，不要什么都放上去
 
@@ -10,7 +10,9 @@
 
 文件不要太大，PDF压缩。40页左右？15m pdf以内。
 
+前十页一定要炸，保证品质
 
+突出个人优势 如C4D、组件化
 
 
 
@@ -28,13 +30,13 @@
 
 <img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211101182026236.png" alt="image-20211101182026236" style="zoom:30%;" />
 
-<img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211101182317000.png" alt="image-20211101182317000" style="zoom:30%;" />
 
 
+## 信息总览
 
-## 个人信息
+照片
 
-照片、基本信息
+基本信息
 
 工作经历
 
@@ -44,47 +46,69 @@
 
 <img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211101181630052.png" alt="image-20211101181630052" style="zoom:20%;" />
 
-## 作品介绍-App
+
+
+## 作品介绍
 
 
 
-### 产品
+### 产品分析
+
+分析一定要落地到设计
 
 #### App介绍
+
+<img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211103153504598.png" alt="image-20211103153504598" style="zoom:50%;" />
 
 #### 用户画像
 
 #### 竞品分析
 
-### 交互低保证
+#### 为什么改版
 
-有链路关系
-
-### 功能结构图
+#### 功能结构图
 
 可以用流程图
 
-### 模块展示
+#### 交互低保证
+
+有链路关系
+
+
+
+### 页面展示
+
+#### 分页面展示
 
 只要核心模块，设置页面等不需要
 
 搭配文字介绍
 
-可以用突出模块的设计
+可以用突出模块的设计，元素拆出来单独展示+说明
 
-### 字体
+#### 设计规范与组件库
+
+<img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211103151736791.png" alt="image-20211103151736791" style="zoom:50%;" />
+
+#### 规范展示
+
+<img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211103150632915.png" alt="image-20211103150632915" style="zoom:50%;" />
 
 <img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211102175742142.png" alt="image-20211102175742142" style="zoom:50%;" />
 
-### 配色
+字体
 
-### 图标
+配色
 
+图标
 
+#### 标注
 
-## 个人优势
+<img src="/Users/lcy/Documents/note/UI作品集大纲.assets/image-20211103152024563.png" alt="image-20211103152024563" style="zoom:50%;" />
 
-标注切图命名规范
+#### 集锦展示
+
+### 项目复盘
 
 
 
@@ -120,7 +144,13 @@ Bore584
 
 ## 资源网站
 
-https://discover.gumroad.com/?category=design&maxPrice=0
+### 作品集
+
+金融产品改版  https://www.zcool.com.cn/work/ZMzc4MDY3NDQ=.html 
+
+https://www.zcool.com.cn/work/ZNTQ5MjI2MzI=.html
+
+https://www.zcool.com.cn/work/ZNTU4MTA3MDQ=.html
 
 
 
@@ -140,8 +170,11 @@ https://psdrepo.com/page/1/?s=iphone+mockup
 
 https://www.uistore.design/categories/mockups/
 
+### 网站灵感
 
- 
+https://www.siteinspire.com/
+
+###  
 
 ### 配色
 
@@ -172,7 +205,23 @@ https://www.uistore.design/categories/mockups/
 
 
 
-# 面试题
+# 找工作
+
+## 目标公司类型
+
+跟自己相关的、了解业务的
+
+比如：
+
+金融（全面）
+
+toB（重业务，不需要设计太好看）
+
+直播（炫）
+
+
+
+## 面试题
 
 App为什么使用这套配色？这套字号？
 
@@ -186,7 +235,7 @@ App为什么使用这套配色？这套字号？
 
 
 
-# 问公司的问题
+## 问公司的问题
 
 有没有实际上线作品？
 
