@@ -174,9 +174,7 @@ https://www.uistore.design/categories/mockups/
 
 https://www.siteinspire.com/
 
-###  
-
-### 配色
+###  配色
 
 \1. UI配色及效果预览网站 https://www.colorffy.com   
 \2. 在线实例测试网页配色的网站 http://paletton.com   
