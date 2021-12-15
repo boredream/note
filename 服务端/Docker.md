@@ -573,6 +573,34 @@ $ docker exec nginx1 nginx -s reload
 
 
 
+## Redis
+
+### 目录结构
+
+```sh
+# 配置文件
+/etc/redis/redis.conf 
+
+# 数据
+/data 
+```
+
+
+
+### 配置
+
+```sh
+
+```
+
+
+
+### 使用
+
+```sh
+
+```
+
 
 
 ## MySql
