@@ -633,6 +633,7 @@ $ docker run --rm -it --name mysql1 mysql bin/bash
 
 # 2. 拷贝容器配置文件等，到本地(先 cd 到目标目录)
 $ docker cp mysql1:/etc/mysql ./mysql/conf
+$ docker cp mysql1:/var/lib/mysql ./mysql/data
 
 # 3. 手动删除容器
 $ docker rm -f mysql1
@@ -640,6 +641,7 @@ $ docker rm -f mysql1
 # 4. 启动容器并设置挂载文件
 $ docker run -d --name mysql1 \
 -p 3306:3306 \
+-v ./mysql/data:/var/lib/mysql \
 -v ./mysql/conf:/etc/mysql \
 -v ./mysql/log:/var/log/mysql \
 -v ./mysql/init:/docker-entrypoint-initdb.d \
@@ -649,6 +651,27 @@ nginx
 $ docker exec nginx1 nginx -s reload
 
 ```
+
+
+
+### 数据备份和恢复
+
+```sh
+# 备份MySql容器里的MySQL数据库：
+$ docker exec -it docker_mysql_1 mysqldump -uroot -proot love_cookbook>/root/mysql_backup.sql
+
+# 只备份数据
+$ mysqldump -t
+
+# 还原MySQL数据库：
+# 1.创建数据库：
+$ docker exec -it Docker容器名 mysql -uroot -p数据库密码 CREATE DATABASE 数据库名 DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+# 2.还原：
+$ docker exec -i Docker容器名 mysql -uroot -p数据库密码 数据库名 < 备份文件名.sql
+```
+
+
 
 
 
