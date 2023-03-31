@@ -2450,5 +2450,9 @@ struct PageViewController<Page: View>: UIViewControllerRepresentable {
 
 
 
+为什么要有协调器？
+
+继承自UIViewRepresentable的是一个结构体，而如果想做继承等类才有的功能，就需要用到Coordinator
+
 
 

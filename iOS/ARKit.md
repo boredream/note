@@ -96,6 +96,12 @@ session.run(config)
 
 ## 概念
 
+ARKit 用于记录AR的基础信息，位置、会话、探测信息等
+
+RealityKit 用于渲染实体，正方体、自定义udsz对象等
+
+
+
 ### ARKit
 
 https://developer.apple.com/documentation/arkit/
@@ -160,12 +166,6 @@ init(plane)
 
 
 
-#### ARFrame
-
-帧。ARSession从摄像中采集的视频流，按需计算后会以帧的形式进行处理。
-
-
-
 ### RealityKit 
 
 https://developer.apple.com/documentation/realitykit
@@ -192,35 +192,73 @@ AR渲染视图入口。
 
 #### Entity
 
+<img src="/Users/lcy/Documents/note/iOS/ARKit.assets/image-20220916133855300.png" alt="image-20220916133855300" style="zoom:70%;" />
+
 实体。
 
-不同实体间可以互相包含，child Entity的默认属性会保持和parent一致。
+实体间可以互相包含
+
+都具有 Synchronization（？） 和 Transform（坐标旋转等）属性
+
+特殊子类具有不同特殊属性，且每个属性有对应的协议实现 HasXXX，可以按需自定义Entity
+
+
 
 
 
 ##### AnchorEntity
 
-锚点。可以添加多个绘制实体。
+锚点实体。可以添加到Scene场景里，锚点根据需要可以是探测到的Pane平面或Image图片或直接坐标等
 
 
 
 ##### ModelEntity
 
-模块实体。
-
-2D
+模型实体。用于实际渲染虚拟物品。此外还具有实体的Collision碰撞、Physics物理属性等
 
 
 
-##### Mesh
-
-网格。3D物体的边框、点、位置等共同组成的框架信息。
 
 
+#### Component
 
-##### Material
+组件。可以是展示也可以是行为，用于按需组成Entity。
 
-材料。配合Mesh组成ModelEntity。
+如ModelEntity实现了 HasModel协议，则会对应提供一个 ModelComponent需要自定义，
+
+同理 HasCollision会对应一个CollisionComponent
+
+
+
+
+
+#### 协议
+
+##### HasAnchoring
+
+可以被加入到scene中
+
+
+
+##### HasModel
+
+可以提供meshes结构，和materials材质
+
+
+
+##### HasPhysics
+
+可以提供物理属性和行为
+
+
+
+##### HasCollision
+
+可以提供物理碰撞属性。
+
+如果要实现点击屏幕命中实体，则除了渲染物体外还要实现该协议具有碰撞体积。
+
+
 
 
 
@@ -394,6 +432,28 @@ https://github.com/IamMrandrew/arkit-multipeer-connectivity-swiftui
 
 
 ## 最佳实践
+
+
+
+### 实体数据和AREntity的绑定
+
+方法1.
+
+实体数据，其中持有AREntity变量
+
+持久化保存时只保存实体数据基础，恢复时利用信息重新生成AREntity再加入到AR世界
+
+
+
+方法2.
+
+自定义对象，实现Entity，然后自定义
+
+持久化保存时如何保存？
+
+
+
+
 
 
 
@@ -585,6 +645,16 @@ installGesture的物体移动是相对于parent anchor的translation，所以移
 
 
 
+### 添加物品预览
+
+物品随着镜头移动，确定后才加入。
+
+如果是PlaneAnchor，则随着镜头移动时还需要平面吸附，类似于FocusEntity、自带AR尺子
+
+
+
+
+
 ### 坐标系转换
 
 
@@ -599,7 +669,31 @@ var position = SIMD3(frame.camera.transform.columns.3.x,
 
 
 
+### 列表数据更新UI
 
+一般来说使用适配器模式，Android RecycleViewAdapter，iOS是TableView DataSource。
+
+如果是AR中，集合数据希望对应更新多个Entity如何处理呢？
+
+
+
+方式1.临时变化增量（actionData）
+
+需要根据数据修改UI，且再把变量增量加入数据集合
+
+
+
+方式2.数据携带增量信息（data.action）
+
+需要根据数据集合里的增量信息修改UI，最后清空数据的增量信息
+
+
+
+方式3.自定义数据实现Entity
+
+直接数据+Entity作为一体。
+
+需要考虑数据持久化问题，恢复时要重新创建Entity加入Scene
 
 
 
@@ -651,6 +745,7 @@ var position = SIMD3(frame.camera.transform.columns.3.x,
 
 - [x] 桌面放置物体
 - [x] 放置文字物体
+- [ ] 基于平面识别，自定义设置世界中心 [平面识别绘制](https://developer.apple.com/documentation/arkit/content_anchors/tracking_and_visualizing_planes)
 - [ ] 放置带文字的卡片
 - [ ] 文字卡片内容可自定义、可修改
 - [ ] 箭头
